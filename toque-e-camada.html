@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Toque & Camada</title>
+<style>
+:root{--bg:#070b16;--panel:#101a2e;--panel2:#16233b;--line:#25354f;--text:#f3f6fc;--muted:#9fb0c8;--blue:#6db4ff;--mint:#4fe0b0;--gold:#ffd27a;--red:#ff8484}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button,input{font:inherit;color:inherit}button{cursor:pointer;border:none}
+.app{height:100%;display:flex;flex-direction:column}
+.top{display:none;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid var(--line);flex:none}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800}
+.logo{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--blue),var(--mint));color:#06101c;font-weight:900;font-size:12px}
+.chip{border:1px solid var(--line);background:var(--panel);padding:7px 12px;border-radius:12px;font-size:13px;color:var(--muted)}
+.layout{flex:1;min-height:0;display:grid;grid-template-columns:68px minmax(0,1fr);gap:0;padding:0}
+.sidebar{background:var(--panel);border:0;border-right:1px solid var(--line);border-radius:0;padding:8px 6px;display:flex;flex-direction:column;justify-content:center;gap:12px;height:100%}
+.navbtn{background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 4px;border-radius:12px;font-weight:600;font-size:0;line-height:1;text-align:center}
+.navbtn span{font-size:26px}
+.navbtn.active{background:#1d3050;color:#fff;box-shadow:inset 0 0 0 1px #365078}
+main{min-width:0;min-height:0}
+.section{display:none;height:100%;gap:0;grid-template-columns:minmax(0,1.7fr) minmax(0,.75fr)}.visual-col{padding:18px 28px 18px 0;min-height:0;display:flex;align-items:center}.visual-col .stage{width:100%;height:56%;max-height:500px;min-height:340px;border-radius:22px;opacity:.9}
+.section.active{display:grid}
+.content-col{min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding:0 clamp(28px,4.5vw,84px)}
+.content-col::-webkit-scrollbar{width:6px}.content-col::-webkit-scrollbar-thumb{background:#25354f;border-radius:9px}
+.pgwrap{margin:auto 0;padding:8px 0}
+.pg{display:none;animation:fade .35s ease}.pg.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pager{position:sticky;bottom:0;flex:none;display:flex;justify-content:space-between;align-items:center;padding:12px 0;background:linear-gradient(transparent,var(--bg) 35%)}
+.pbtn{background:#1d3050;border:1px solid var(--blue);padding:11px 20px;border-radius:12px;font-weight:700}
+.pbtn:hover{background:var(--blue);color:#000}.pcount{color:var(--muted);font-weight:700}
+.eyebrow{color:var(--mint);font-weight:800;letter-spacing:1.6px;text-transform:uppercase;font-size:12px}
+h1{font-size:clamp(32px,4.4vw,64px);line-height:1.05;letter-spacing:-1.5px;margin:8px 0 14px}
+h3{margin:0 0 8px;font-size:27px}.lead{font-size:22px;line-height:1.7}
+.lead{color:var(--muted);margin:0 0 18px}
+.card{background:linear-gradient(155deg,var(--panel2),#0e1627);border:1px solid var(--line);border-radius:20px;padding:30px;margin-bottom:18px}
+.card p,.card li{color:var(--muted);font-size:22px;line-height:1.7;margin:18px 0 0}.card ul{padding-left:18px;margin:10px 0 0}
+.card.bad{border-color:#5c2b39}
+.tag{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:4px 10px;margin-bottom:10px;background:#123329;color:var(--mint)}
+.tag.p{color:var(--red);background:#3b1d2b}
+.callout{border-left:3px solid var(--mint);background:#10282a;color:#d6fff0;padding:14px 18px;border-radius:0 14px 14px 0;margin-top:16px}
+.stage{position:relative;height:100%;border-radius:28px;background:radial-gradient(ellipse at 50% 60%,#243b5a,#0a1220 72%);border:2px solid var(--line);overflow:hidden;display:grid;place-items:center;box-shadow:0 20px 60px #0008}
+.cap{position:absolute;bottom:16px;font-size:12px;font-weight:800;letter-spacing:2px}
+.ttl{position:absolute;top:28px;text-align:center}.ttl h2{margin:0;font-size:28px}.ttl p{margin:4px 0 0;color:var(--muted);font-size:14px}
+/* NFC */
+.plate{position:absolute;right:12%;top:50%;transform:translateY(-50%);width:200px;height:270px;border-radius:26px;background:linear-gradient(150deg,#f8fbff,#c3d0e2);color:#0b1626;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;box-shadow:0 18px 40px #0008;font-weight:800}
+.rings{width:70px;height:70px;position:relative}.rings i{position:absolute;inset:0;border:5px solid #1d3b66;border-radius:50%;border-left-color:transparent;border-bottom-color:transparent;transform:rotate(45deg)}
+.rings i:nth-child(2){inset:14px}.rings i:nth-child(3){inset:28px}
+.phone{position:absolute;left:10%;top:50%;transform:translateY(-50%);width:220px;height:420px;border-radius:34px;border:6px solid #0a0f1a;background:#0b1424;box-shadow:0 20px 50px #000a,0 0 0 2px #3a4c69;transition:left .6s cubic-bezier(.2,.8,.2,1);z-index:3;overflow:hidden}
+.tapped .phone{left:calc(88% - 200px - 220px + 40px)}
+.screen{height:100%;padding:24px 14px;display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.sc-h{font-weight:800;font-size:13px;color:var(--blue);text-transform:uppercase}.stars{color:var(--gold);font-size:30px}
+.sc-b{background:linear-gradient(90deg,var(--blue),var(--mint));color:#06101c;font-weight:800;border-radius:10px;padding:12px;margin-top:auto;width:100%}
+/* impressora lateral */
+.psvg{width:94%;max-height:78%}.pb{position:absolute;bottom:48px;height:8px;background:#22324c;border-radius:9px;overflow:hidden;width:60%}.pb span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--mint))}
+/* 3D */
+.cube-stage{perspective:1400px;display:flex;justify-content:center;align-items:center;width:100%;height:100%}
+.printer-3d{position:relative;width:0;height:0;transform-style:preserve-3d;animation:spin 8s linear infinite}
+.printer-3d div{position:absolute}
+.p-base{width:220px;height:220px;background:#19233ff2;border:3px solid #6db4ff;transform:translate(-50%,-50%) rotateX(90deg) translateZ(-110px)}
+.p-bed{width:160px;height:160px;background:#4fe0b0e6;border:2px solid #fff;transform:translate(-50%,-50%) rotateX(90deg) translateZ(-90px)}
+.p-fl,.p-fr{width:16px;height:250px;background:#2b3d59;border:1px solid #4a6791}
+.p-fl{transform:translate(-50%,-50%) translateX(-100px) translateY(-15px)}.p-fr{transform:translate(-50%,-50%) translateX(100px) translateY(-15px)}
+.p-ft{width:216px;height:16px;background:#4a6791;transform:translate(-50%,-50%) translateY(-140px)}
+.p-ax{width:196px;height:12px;background:#5c7fae;transform:translate(-50%,-50%) translateY(20px)}
+.p-hd{width:36px;height:48px;background:#ffb86b;border-radius:5px;transform:translate(-50%,-50%) translateY(38px) translateX(35px) translateZ(8px);box-shadow:0 0 20px #ffb86b}
+.p-pr{width:60px;height:70px;background:#4fe0b099;border:2px solid #4fe0b0;transform:translate(-50%,-50%) rotateX(90deg) translateZ(-55px) translateY(-20px) translateX(35px)}
+@keyframes spin{from{transform:rotateX(-15deg) rotateY(0) scale(1.5)}to{transform:rotateX(-15deg) rotateY(360deg) scale(1.5)}}
+/* caminhão */
+.truck-scene{position:absolute;inset:0}
+.road{position:absolute;bottom:70px;width:100%;border-bottom:6px dashed #3a5075}
+.garage{position:absolute;bottom:76px;left:50%;transform:translateX(-50%);width:230px;height:160px;background:#101a2e;border:3px solid #25354f;border-bottom:none;border-radius:12px 12px 0 0}
+.garage::before{content:'PONTO DE COLETA';position:absolute;top:-30px;width:100%;text-align:center;color:var(--mint);font-size:14px;font-weight:700;letter-spacing:2px}
+.t-box{position:absolute;bottom:20px;left:50%;margin-left:-25px;width:50px;height:50px;background:var(--gold);border-radius:6px;display:grid;place-items:center;font-size:28px;opacity:0;animation:box 6s infinite}
+.t-truck{position:absolute;bottom:75px;left:-150px;font-size:90px;animation:drive 6s infinite;z-index:5}
+@keyframes drive{0%{left:-150px}25%,60%{left:calc(50% - 45px)}100%{left:120%}}
+@keyframes box{0%,25%{opacity:0;transform:translateY(-60px)}35%,55%{opacity:1;transform:none}60%,100%{opacity:0}}
+/* balança */
+.scale-base{position:absolute;bottom:18%;border-left:34px solid transparent;border-right:34px solid transparent;border-bottom:70px solid #25354f}
+.scale-beam{position:absolute;bottom:calc(18% + 70px);width:360px;height:8px;background:#4a6791;border-radius:4px;animation:see 4s ease-in-out infinite alternate}
+.pan{position:absolute;top:8px;width:90px;height:80px;border:3px solid;border-top:none;border-radius:0 0 45px 45px;font-size:40px;text-align:center;line-height:90px}
+.pan.l{left:0;transform:translateX(-50%);border-color:var(--blue)}.pan.r{right:0;transform:translateX(50%);border-color:var(--mint)}
+.pan b{position:absolute;bottom:-28px;left:0;width:100%;font-size:12px;line-height:1}
+@keyframes see{from{transform:rotate(-10deg)}to{transform:rotate(10deg)}}
+/* lote */
+.top-down{display:flex;justify-content:center;align-items:center;perspective:900px;width:100%;height:100%}
+.bed{width:340px;height:340px;background:#172436;border:2px solid #283e5c;border-radius:12px;position:relative;background-image:linear-gradient(#1f2f45 1.5px,transparent 1.5px),linear-gradient(90deg,#1f2f45 1.5px,transparent 1.5px);background-size:25px 25px;transform:rotateX(20deg) scale(1.15);box-shadow:0 30px 60px #0009}
+.nozzle{position:absolute;width:18px;height:18px;background:radial-gradient(circle,#ffb86b 20%,#f0a55c 60%,#1a1a1a 90%);border-radius:50%;box-shadow:0 0 20px #f0a55c;z-index:9;transform:translate(-50%,-50%)}
+.pitem{position:absolute;width:100px;height:140px;border-radius:8px;background:#4fe0b00d;display:grid;place-items:center}
+.item-svg{width:80%;height:80%;fill:none;stroke:#4fe0b0;stroke-width:4;stroke-dasharray:400;stroke-dashoffset:400}
+/* tabela e calculadora */
+.table{width:100%;border-collapse:collapse}.table th{text-align:left;color:var(--muted);font-size:13px;text-transform:uppercase;padding:10px;font-size:14px;border-bottom:1px solid var(--line)}
+.table td{padding:16px 10px;border-bottom:1px solid #1a2a43;font-size:18px;color:var(--muted)}.table td strong{color:var(--text)}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fld label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.fld input{width:100%;background:#0a1322;border:1px solid #324560;border-radius:10px;padding:11px;font-size:17px}
+.fld input:focus{outline:none;border-color:var(--mint)}
+.btn-magic{background:#1d3050;border:1px solid var(--blue);padding:13px;border-radius:12px;font-weight:700;width:100%;margin-bottom:14px}
+.btn-magic:hover{background:var(--blue);color:#000}
+.res{background:#0a1423;border:1px solid #2c4060;border-radius:16px;padding:12px 18px;margin-top:12px}
+.res small{color:var(--muted);text-transform:uppercase;font-size:12px;letter-spacing:1px}
+.res .v{font-size:32px;font-weight:850;color:var(--mint);display:block}
+.rr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.rr b{display:block;font-size:20px}
+@media(max-width:900px){html,body{overflow:auto}.layout{grid-template-columns:1fr}.sidebar{flex-direction:row;overflow-x:auto}.section.active{display:flex;flex-direction:column;height:auto}.stage{height:360px}.content-col{overflow:visible}.fg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand"><div class="logo">T&C</div>TOQUE & CAMADA</div>
+  <button class="chip" onclick="document.documentElement.requestFullscreen?.()">⛶ Tela cheia</button>
+</header>
+<div class="layout">
+<nav class="sidebar">
+  <button class="navbtn active" onclick="nav('nfc')"><span>⌁</span>Placas NFC</button>
+  <button class="navbtn" onclick="nav('d3')"><span>▧</span>Impressão 3D</button>
+  <button class="navbtn" onclick="nav('machines')"><span>⚙️</span>Maquinário</button>
+  <button class="navbtn" onclick="nav('ecom')"><span>🛒</span>E-commerce</button>
+  <button class="navbtn" onclick="nav('fat')"><span>⚖️</span>Mercado</button>
+  <button class="navbtn" onclick="nav('integra')" style="color:var(--mint)"><span>🚀</span>Integrado</button>
+</nav>
+<main>
+
+<div id="nfc" class="section active">
+  <div class="content-col"><div class="pgwrap">
+    <div class="pg">
+      <div class="eyebrow">Análise Isolada 1</div><h1>A Venda de Placas NFC</h1>
+      <p class="lead">NFC é uma tecnologia de ondas curtas: o celular emite o sinal que ativa o chip da placa. Sem bateria, sem app, leitura instantânea.</p>
+      <div class="card"><h3>Aplicações Comerciais</h3><ul><li><b>Google Review:</b> encostou, abriu a tela de 5 estrelas.</li><li><b>WhatsApp:</b> abre a conversa com texto pré-definido.</li><li><b>Pix/Checkout:</b> envia pro link de pagamento na hora.</li></ul></div>
+    </div>
+    <div class="pg"><div class="card"><div class="tag">PRÓS</div><h3>Vantagens</h3><ul><li><b>Adoção massiva:</b> funciona em quase todos os smartphones modernos.</li><li><b>Alta margem:</b> o chip custa centavos; você cobra pela conveniência e pela arte.</li><li><b>Sem manutenção:</b> chips duram anos e não exigem bateria.</li></ul></div></div>
+    <div class="pg"><div class="card bad"><div class="tag p">O CALCANHAR DE AQUILES</div><ul><li><b>Zero LTV:</b> o cliente compra, você configura e ele não precisa mais de você. Venda única.</li><li><b>Prospecção exaustiva:</b> sem recorrência, você caça clientes novos todo dia.</li><li><b>Vulnerabilidade DIY:</b> um app gratuito basta para o cliente reconfigurar a placa sozinho.</li></ul></div></div>
+  </div><div class="pager"></div></div>
+  <div class="visual-col"><div class="stage" id="nfcStage">
+    <div class="plate"><div class="rings"><i></i><i></i><i></i></div>SUA MARCA</div>
+    <div class="phone"><div class="screen" id="screen"></div></div>
+    <div class="cap" style="color:var(--blue)">SIMULAÇÃO DE INTERAÇÃO</div></div></div>
+</div>
+
+<div id="d3" class="section">
+  <div class="content-col"><div class="pgwrap">
+    <div class="pg">
+      <div class="eyebrow">Análise Isolada 2</div><h1>Serviços de Impressão 3D</h1>
+      <p class="lead">A modelagem por deposição fundida (FDM) derrete o plástico a ~200ºC e desenha o objeto fatia por fatia: manufatura flexível ao extremo.</p>
+      <div class="card"><div class="tag">PRÓS</div><ul><li><b>Flexibilidade extrema:</b> de organizadores a peças mecânicas, sem custo de molde.</li><li><b>Estoque zero:</b> produção sob demanda; o caixa nunca fica travado.</li></ul></div>
+    </div>
+    <div class="pg"><div class="card bad"><div class="tag p">O CALCANHAR DE AQUILES</div><ul><li><b>Gargalo de tempo:</b> uma peça leva horas; sua escala é o número de máquinas.</li><li><b>Manutenção técnica:</b> bicos entupidos e calibração fina são rotina.</li></ul></div></div>
+    <div class="pg"><div class="card"><h3>Custos Visíveis e Ocultos</h3><ul><li><b>Energia:</b> irrisória, ~R$ 0,05 a R$ 0,15 por hora.</li><li><b>Filamento:</b> 1kg de PLA/PETG custa ~R$ 90 a R$ 120 e rende centenas de peças médias.</li><li style="color:var(--mint)"><b>Insumos ocultos:</b> spray fixador/cola bastão (para a peça não soltar da mesa) e graxa branca para as hastes.</li></ul></div></div>
+  </div><div class="pager"></div></div>
+  <div class="visual-col"><div class="stage">
+    <svg class="psvg" viewBox="0 0 520 340">
+      <rect x="118" y="46" width="12" height="246" rx="4" fill="#b4c3d6"/><rect x="390" y="46" width="12" height="246" rx="4" fill="#b4c3d6"/>
+      <rect x="112" y="36" width="296" height="12" rx="5" fill="#cbd7e6"/><rect x="90" y="292" width="340" height="32" rx="9" fill="#243653"/>
+      <g id="pr_layers"></g><path id="pr_fil" fill="none" stroke="#4fe0b0" stroke-width="2.5" stroke-linecap="round"/>
+      <g id="pr_gantry"><rect x="124" y="0" width="272" height="9" rx="4" fill="#dfe8f3"/><g id="pr_head"><rect x="-26" y="-4" width="52" height="24" rx="6" fill="#74879f"/><path d="M-6 20h12l-6 12z" fill="#ffb86b"/></g></g>
+    </svg>
+    <div class="pb"><span id="pr_bar"></span></div>
+    <div class="cap" style="color:var(--mint)">CORTES LATERAIS FDM</div></div></div>
+</div>
+
+<div id="machines" class="section">
+  <div class="content-col"><div class="pgwrap">
+    <div class="pg">
+      <div class="eyebrow">Minhas Recomendações</div><h1>O Maquinário Ideal (2026)</h1>
+      <p class="lead">Para lucrar de verdade, use equipamentos que trabalhem por você. Evite "dinossauros" tecnológicos.</p>
+      <div class="card"><table class="table">
+        <tr><th>Categoria</th><th>Máquina</th><th>Análise</th></tr>
+        <tr><td><strong>Entrada</strong><br>~R$ 1.400</td><td><strong>Creality Ender 3 V3 SE</strong></td><td>Barata e rápida; ótima "escola" de mecânica.</td></tr>
+        <tr><td><strong>Custo-benefício</strong><br>~R$ 1.800</td><td><strong>Elegoo Neptune 4 Pro</strong></td><td>Klipper nativo e guias lineares de metal.</td></tr>
+        <tr><td><strong>Ideal</strong><br>~R$ 2.300</td><td><strong style="color:var(--mint)">Bambu Lab A1 Mini</strong></td><td>A rainha dos pequenos negócios: tira da caixa e imprime, confiável e silenciosa.</td></tr>
+        <tr><td><strong>Escala</strong><br>~R$ 3.800</td><td><strong>Bambu Lab A1</strong></td><td>Mesa de 25x25cm para lotes enormes.</td></tr>
+        <tr><td><strong>Profissional</strong><br>~R$ 5.000</td><td><strong>Creality K1C / Bambu P1S</strong></td><td>Enclausuradas; indispensáveis para ABS.</td></tr>
+      </table></div>
+    </div>
+  </div><div class="pager"></div></div>
+  <div class="visual-col"><div class="stage"><div class="cube-stage"><div class="printer-3d">
+    <div class="p-base"></div><div class="p-bed"></div><div class="p-fl"></div><div class="p-fr"></div><div class="p-ft"></div><div class="p-ax"></div><div class="p-hd"></div><div class="p-pr"></div>
+  </div></div><div class="cap">VISÃO 360º ESTRUTURAL</div></div></div>
+</div>
+
+<div id="ecom" class="section">
+  <div class="content-col"><div class="pgwrap">
+    <div class="pg">
+      <div class="eyebrow">A Realidade da Escala</div><h1>O Cenário do E-commerce</h1>
+      <p class="lead">Quando o bairro satura, a saída é vender online (Shopee, Mercado Livre). Mas escalar na internet tem regras logísticas pesadas.</p>
+      <div class="card" style="border-top:4px solid #f59e0b"><h3>📦 A Logística Diária</h3><p>Você deixa de ser só "maker" e vira empacotador: caixas, plástico bolha, fitas, etiquetas.</p><p style="color:var(--gold)"><b>O pior:</b> ir aos Correios todo dia útil. Isso rouba horas da produção.</p></div>
+    </div>
+    <div class="pg"><div class="card" style="border-top:4px solid #ef4444"><h3>💸 A Mordida das Taxas</h3><p>Comissões de <b>14% a 20%</b> mais taxa fixa (R$ 3 a R$ 6) por pedido.</p><p style="color:#ef4444">Numa peça de R$ 15, a plataforma fica com quase todo o lucro.</p></div></div>
+    <div class="pg"><div class="card" style="border-top:4px solid #3b82f6"><h3>⚔️ O Mar de Sangue</h3><p>Todo mundo imprime as mesmas coisas genéricas e joga na Shopee, criando guerra de preços.</p><p style="color:#3b82f6">O segredo para sobreviver é vender exclusividade.</p></div></div>
+  </div><div class="pager"></div></div>
+  <div class="visual-col"><div class="stage"><div class="truck-scene"><div class="road"></div><div class="garage"><div class="t-box">📦</div></div><div class="t-truck">🚚</div></div>
+    <div class="ttl"><h2 style="color:var(--gold)">TEMPO = DINHEIRO</h2><p>O gargalo logístico do varejo barato</p></div></div></div>
+</div>
+
+<div id="fat" class="section">
+  <div class="content-col"><div class="pgwrap">
+    <div class="pg">
+      <div class="eyebrow">O que rola na prática</div><h1>Faturamento Isolado</h1>
+      <p class="lead">O que acontece quando você foca em apenas um mercado?</p>
+      <div class="card" style="border-left:4px solid var(--blue)"><h3 style="color:var(--blue)">💰 Somente Venda NFC</h3><p>Compram placas de acrílico genéricas, colam o adesivo e revendem no comércio local.</p><div class="callout" style="border-color:var(--blue);background:#12213a"><b>R$ 1.500 a R$ 3.500 /mês.</b><br>Obstáculo: exaustão física e LTV zero; é preciso bater de porta em porta todo dia.</div></div>
+    </div>
+    <div class="pg"><div class="card" style="border-left:4px solid var(--mint)"><h3 style="color:var(--mint)">💰 Somente Impressão 3D</h3><p>Vendem chaveiros e suportes genéricos no e-commerce, brigando por centavos.</p><div class="callout"><b>R$ 1.200 a R$ 3.000 /mês.</b><br>Obstáculo: teto de horas; crescer exige reinvestir em mais impressoras.</div></div></div>
+  </div><div class="pager"></div></div>
+  <div class="visual-col"><div class="stage"><div style="position:absolute;inset:0;display:grid;place-items:center"><div class="scale-base"></div>
+    <div class="scale-beam"><div class="pan l">📱<b style="color:var(--blue)">SÓ NFC</b></div><div class="pan r">⚙️<b style="color:var(--mint)">SÓ 3D</b></div></div></div>
+    <div class="ttl"><h2>MERCADOS DESEQUILIBRADOS</h2><p>Trabalhar isolado gera sobrecarga e baixo retorno</p></div></div></div>
+</div>
+
+<div id="integra" class="section">
+  <div class="content-col"><div class="pgwrap">
+    <div class="pg">
+      <div class="eyebrow">A Sinergia Matadora</div><h1>A Integração: Modelo B2B</h1>
+      <p class="lead">O revendedor NFC paga caro no acrílico; o "cara da 3D" vende brinde barato. <b>A solução: fabricar Displays NFC Inclinados para empresas.</b></p>
+      <button onclick="autoFill()" class="btn-magic">🪄 Preencher com cenário real de mercado</button>
+      <div class="card" style="border-color:var(--mint)"><h3>Variáveis de Custo e Venda</h3><div class="fg">
+        <div class="fld"><label>Preço do PLA (1kg) - R$</label><input id="sim_pla" inputmode="decimal" placeholder="95,00"></div>
+        <div class="fld"><label>Peso do Display (g)</label><input id="sim_g" inputmode="decimal" placeholder="75"></div>
+        <div class="fld"><label>Chip NFC (R$)</label><input id="sim_nfc" inputmode="decimal" placeholder="2,50"></div>
+        <div class="fld"><label>Fixador/Caixa/Frete (R$)</label><input id="sim_emb" inputmode="decimal" placeholder="3,50"></div>
+        <div class="fld"><label>Impressora 3D (R$)</label><input id="sim_maq" inputmode="decimal" placeholder="2300,00"></div>
+        <div class="fld"><label>Preço de Venda (R$)</label><input id="sim_venda" inputmode="decimal" placeholder="120,00"></div>
+        <div class="fld"><label>Displays vendidos no mês</label><input id="sim_vol" inputmode="decimal" placeholder="80"></div>
+      </div></div>
+    </div>
+    <div class="pg"><div class="card"><h3>Resultado do Modelo de Fábrica</h3>
+      <div class="res"><small>Custo de Fabricação (COGS)</small><span class="v" style="color:var(--red)" id="out_custo">R$ 0,00</span></div>
+      <div class="res" style="border-color:var(--mint)"><small>Lucro Bruto Unitário</small><span class="v" id="out_lucro">R$ 0,00</span></div>
+      <div class="rr"><div><small>Margem</small><b id="out_margem">0%</b></div><div><small>Máquina paga em</small><b id="out_roi" style="color:var(--gold)">0 vendas</b></div></div>
+      <div class="callout" style="border-color:var(--blue);background:#0e1724">Com <b id="out_vol_text">0</b> unidades no mês:<br><b id="out_mensal" style="color:var(--blue);font-size:28px">R$ 0,00 /mês</b></div></div></div>
+  </div><div class="pager"></div></div>
+  <div class="visual-col"><div class="stage" style="border-color:var(--mint);box-shadow:0 0 30px #4fe0b033">
+    <div class="top-down"><div class="bed" id="bedTop"><div class="nozzle" id="nozzleTop"></div></div></div>
+    <div class="ttl" style="top:18px;background:#4fe0b01a;padding:8px 18px;border:1px solid var(--mint);border-radius:12px"><h3 style="margin:0;color:var(--mint);font-size:16px">PRODUÇÃO IN-HOUSE</h3><p style="margin:2px 0 0;font-size:12px;color:#fff">Impressão em Lote 4x</p></div></div></div>
+</div>
+
+</main>
+</div>
+</div>
+
+<script>
+const order=['nfc','d3','machines','ecom','fat','integra'];
+const navbtns=[...document.querySelectorAll('.navbtn')],sections=[...document.querySelectorAll('.section')];
+const st={};
+function show(id,i){const s=st[id];s.i=i;s.pages.forEach((p,k)=>p.classList.toggle('on',k===i));
+  s.pager.querySelector('.pcount').textContent=(i+1)+' / '+s.pages.length;
+  s.pager.children[0].style.visibility=(i===0&&order[0]===id)?'hidden':'visible';
+  s.pager.children[2].style.visibility=(i===s.pages.length-1&&order[order.length-1]===id)?'hidden':'visible';
+  document.querySelector('#'+id+' .content-col').scrollTop=0}
+function go(id){navbtns.forEach((b,k)=>b.classList.toggle('active',order[k]===id));sections.forEach(s=>s.classList.toggle('active',s.id===id))}
+function nav(id){go(id);show(id,0)}
+function step(d){const id=document.querySelector('.section.active').id,s=st[id],n=s.i+d;
+  if(n>=0&&n<s.pages.length)return show(id,n);
+  const k=order.indexOf(id)+d;if(k<0||k>=order.length)return;
+  go(order[k]);show(order[k],d>0?0:st[order[k]].pages.length-1)}
+sections.forEach(sec=>{const pages=[...sec.querySelectorAll('.pg')],pager=sec.querySelector('.pager');
+  pager.innerHTML='<button class="pbtn">◀ Anterior</button><span class="pcount"></span><button class="pbtn">Próxima ▶</button>';
+  pager.children[0].onclick=()=>step(-1);pager.children[2].onclick=()=>step(1);
+  st[sec.id]={pages,pager,i:0};show(sec.id,0)});
+// rolar o texto em qualquer lugar da tela
+addEventListener('wheel',e=>{const c=document.querySelector('.section.active .content-col');
+  if(c&&!c.contains(e.target)){c.scrollTop+=e.deltaY;e.preventDefault()}},{passive:false});
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;
+  if(['ArrowRight','PageDown',' '].includes(e.key)){step(1);e.preventDefault()}
+  if(['ArrowLeft','PageUp'].includes(e.key)){step(-1);e.preventDefault()}});
+
+// tela cheia automática no primeiro toque/tecla
+const fs=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>{})};
+addEventListener('click',fs,{once:true});addEventListener('keydown',fs,{once:true});
+// NFC
+const screen=document.getElementById('screen'),nfcStage=document.getElementById('nfcStage');let tapped=false;
+setInterval(()=>{tapped=!tapped;
+  screen.innerHTML=tapped?'<div class="sc-h">Google</div><br><b style="font-size:17px">Sua Loja</b><div class="stars">★★★★★</div><p>Avalie nosso serviço!</p><div class="sc-b">Escrever</div>'
+  :'<div class="sc-h" style="color:#777">Aguardando</div><br><span style="font-size:44px">📶</span><p style="color:#777">Aproxime da placa</p>';
+  nfcStage.classList.toggle('tapped',tapped)},3000);
+
+// Impressora lateral
+const N=46,LH=4,BED=270,CX=260;let prog=0;
+function prRender(){const n=Math.floor(prog);let h='';
+  for(let i=0;i<n;i++){const w=70+50*Math.sin(Math.PI*Math.min(1,(i/N)*1.05));h+=`<rect x="${(CX-w/2).toFixed(1)}" y="${BED-LH*(i+1)}" width="${w.toFixed(1)}" height="${LH}" rx="1.5" fill="${i%2?'#3fc79b':'#4fe0b0'}"/>`}
+  pr_layers.innerHTML=h;
+  const gy=BED-LH*n-32,w=n>0?70+50*Math.sin(Math.PI*Math.min(1,((n-1)/N)*1.05)):70,hx=CX+Math.sin(prog*4.2)*(w/2);
+  pr_gantry.setAttribute('transform','translate(0,'+gy+')');pr_head.setAttribute('transform','translate('+hx.toFixed(1)+',0)');
+  pr_fil.setAttribute('d',`M440 84 C 390 10, ${(hx+30).toFixed(0)} 14, ${hx.toFixed(0)} ${gy-4}`);
+  pr_bar.style.width=Math.round(n/N*100)+'%'}
+setInterval(()=>{prog=Math.min(N,prog+.22);if(prog>=N)setTimeout(()=>{prog=0},1000);else prRender()},40);prRender();
+
+// Lote visto de cima
+const bedTop=document.getElementById('bedTop'),nozzle=document.getElementById('nozzleTop');
+const pos=[{x:85,y:85},{x:255,y:85},{x:85,y:255},{x:255,y:255}];let pt=0,cur=0;
+pos.forEach((p,i)=>{const e=document.createElement('div');e.className='pitem';e.id='b'+i;e.style.left=(p.x-50)+'px';e.style.top=(p.y-70)+'px';
+  e.innerHTML='<svg class="item-svg" viewBox="0 0 100 150"><rect x="15" y="10" width="70" height="130" rx="10"/><path d="M40 70A20 20 0 0 1 60 70"/><path d="M35 80A30 30 0 0 1 65 80"/><path d="M30 90A40 40 0 0 1 70 90"/></svg>';bedTop.appendChild(e)});
+setInterval(()=>{const p=pos[cur],path=document.querySelector('#b'+cur+' .item-svg');
+  nozzle.style.left=(p.x+Math.sin(pt*3)*35)+'px';nozzle.style.top=(p.y-60+pt*1.2)+'px';
+  path.style.strokeDashoffset=Math.max(0,400-pt*4);pt+=2;
+  if(pt>100){pt=0;cur++;if(cur>=4){cur=0;document.querySelectorAll('.item-svg').forEach(s=>s.style.strokeDashoffset=400)}}},40);
+
+// Calculadora
+const ids=['sim_pla','sim_g','sim_nfc','sim_emb','sim_maq','sim_venda','sim_vol'];
+const brl=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const v=id=>parseFloat(document.getElementById(id).value.replace(',','.'))||0;
+function calcular(){const custo=v('sim_pla')/1000*v('sim_g')+v('sim_nfc')+v('sim_emb'),venda=v('sim_venda'),lucro=venda-custo;
+  out_custo.textContent=brl(custo);out_lucro.textContent=brl(lucro);out_lucro.style.color=lucro<0?'var(--red)':'var(--mint)';
+  out_margem.textContent=(venda>0?lucro/venda*100:0).toFixed(1)+'%';
+  out_roi.textContent=(lucro>0&&v('sim_maq')>0?Math.ceil(v('sim_maq')/lucro):0)+' vendas';
+  out_mensal.textContent=brl(lucro*v('sim_vol'))+' /mês';out_vol_text.textContent=v('sim_vol')}
+ids.forEach(i=>document.getElementById(i).addEventListener('input',calcular));
+function autoFill(){['95,00','75','2,50','3,50','2300,00','120,00','80'].forEach((x,k)=>document.getElementById(ids[k]).value=x);calcular()}
+calcular();
+</script>
+</body>
+</html>
